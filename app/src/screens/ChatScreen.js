@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -13,30 +16,15 @@ import {
   View,
 } from "react-native";
 
-// --- AYARLAR ---
-// Emülatör kullanıyorsan (Android): 'http://10.0.2.2:5000/ask'
-// iOS Simülatör kullanıyorsan: 'http://localhost:5000/ask'
-// Gerçek telefon kullanıyorsan: Bilgisayarının IP adresi (örn: 'http://192.168.1.35:5000/ask')
+// API URL (Bilgisayarınızın IP adresini kontrol edin)
 const API_URL = "http://10.83.243.221:5000/ask";
 
-// Renkleri buraya koydum, istersen ayrı dosyadan çekebilirsin
-const COLORS = {
-  primary: "#2563EB",
-  background: "#F3F4F6",
-  white: "#FFFFFF",
-  gray: "#9CA3AF",
-  userBubble: "#2563EB",
-  botBubble: "#E5E7EB",
-  textUser: "#FFFFFF",
-  textBot: "#1F2937",
-};
-
-const ChatScreen = () => {
+export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState([
     {
       id: "1",
-      text: "Merhaba! Ben EIDEM Enerji Asistanı. Size nasıl yardımcı olabilirim?",
+      text: "Merhaba! Ben AIDEM Enerji Asistanı. Size nasıl yardımcı olabilirim? ⚡",
       sender: "bot",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
@@ -46,10 +34,17 @@ const ChatScreen = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Otomatik scroll için referans
   const flatListRef = useRef(null);
 
-  // --- MESAJ GÖNDERME VE API BAĞLANTISI ---
+  // Mesajlar değiştiğinde en alta kaydır
+  useEffect(() => {
+    if (flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages, isLoading]);
+
   const handleSend = async () => {
     if (inputText.trim().length === 0) return;
 
@@ -59,7 +54,7 @@ const ChatScreen = () => {
       minute: "2-digit",
     });
 
-    // 1. Kullanıcı mesajını ekrana bas
+    // 1. Kullanıcı mesajını ekle
     const userMessage = {
       id: Date.now().toString(),
       text: userMessageText,
@@ -70,31 +65,30 @@ const ChatScreen = () => {
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setIsLoading(true);
+    Keyboard.dismiss(); // İsteğe bağlı: Gönderince klavyeyi kapatma
 
     try {
-      // 2. Python Backend'e İstek At (Fetch API)
       console.log("İstek gönderiliyor:", API_URL);
 
+      // 2. API İsteği
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // Flask tarafında: data['question'] olarak bekliyoruz
         body: JSON.stringify({ question: userMessageText }),
       });
 
       const data = await response.json();
 
-      // Backend'den hata dönerse
       if (data.error) {
         throw new Error(data.error);
       }
 
-      // 3. Botun Cevabını Ekrana Bas
+      // 3. Bot cevabını ekle
       const botResponse = {
         id: (Date.now() + 1).toString(),
-        text: data.answer, // Flask tarafında: {"answer": "..."} dönüyor
+        text: data.answer,
         sender: "bot",
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -108,7 +102,7 @@ const ChatScreen = () => {
 
       const errorMessage = {
         id: (Date.now() + 1).toString(),
-        text: "Üzgünüm, şu an sunucuya bağlanamıyorum. Lütfen internet bağlantınızı veya sunucuyu kontrol edin.",
+        text: "Üzgünüm, şu an sunucuya bağlanamıyorum. Lütfen internet bağlantınızı kontrol edin. 🔌",
         sender: "bot",
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -116,37 +110,42 @@ const ChatScreen = () => {
         }),
       };
       setMessages((prev) => [...prev, errorMessage]);
-
-      // Hata detayı için alert (geliştirme aşamasında faydalı)
-      // Alert.alert("Hata", error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Yeni mesaj gelince en alta kaydır
-  useEffect(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
-
-  // --- GÖRÜNÜM ---
-  const renderMessageItem = ({ item }) => {
+  // Her bir mesaj balonu tasarımı
+  const renderItem = ({ item }) => {
     const isUser = item.sender === "user";
     return (
       <View
-        style={[styles.messageRow, isUser ? styles.rowRight : styles.rowLeft]}
+        style={[
+          styles.messageRow,
+          isUser ? styles.messageRowUser : styles.messageRowBot,
+        ]}
       >
+        {/* Bot Avatarı (Sadece Bot mesajlarında) */}
+        {!isUser && (
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>AI</Text>
+          </View>
+        )}
+
+        {/* Mesaj Balonu */}
         <View
           style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleBot]}
         >
-          <Text style={isUser ? styles.textUser : styles.textBot}>
+          <Text
+            style={[
+              styles.messageText,
+              isUser ? styles.textUser : styles.textBot,
+            ]}
+          >
             {item.text}
           </Text>
           <Text
-            style={[
-              styles.timeText,
-              isUser ? styles.timeTextUser : styles.timeTextBot,
-            ]}
+            style={[styles.timeText, isUser ? styles.timeUser : styles.timeBot]}
           >
             {item.time}
           </Text>
@@ -157,125 +156,284 @@ const ChatScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>EIDEM Asistan</Text>
-        <View
-          style={[
-            styles.onlineIndicator,
-            isLoading
-              ? { backgroundColor: "#F59E0B" }
-              : { backgroundColor: "#10B981" },
-          ]}
+      {/* --- HEADER --- */}
+      <LinearGradient
+        colors={["#2563EB", "#1d4ed8"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.headerAvatar}>
+            <Text style={styles.headerAvatarText}>AI</Text>
+          </View>
+          <View>
+            <Text style={styles.headerTitle}>AIDEM Asistan</Text>
+            <View style={styles.statusContainer}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: isLoading ? "#F59E0B" : "#10B981" },
+                ]}
+              />
+              <Text style={styles.statusText}>
+                {isLoading ? "Yazıyor..." : "Çevrimiçi"}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
+
+      {/* --- MESAJ LİSTESİ --- */}
+      <View style={styles.chatContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          // Yükleniyor animasyonu (Listenin sonunda)
+          ListFooterComponent={
+            isLoading && (
+              <View style={styles.loadingContainer}>
+                <View style={styles.avatarContainer}>
+                  <Text style={styles.avatarText}>AI</Text>
+                </View>
+                <View style={styles.bubbleBot}>
+                  <ActivityIndicator size="small" color="#2563EB" />
+                </View>
+              </View>
+            )
+          }
         />
       </View>
 
-      {/* Mesaj Listesi */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMessageItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        keyboardDismissMode="on-drag"
-      />
-
-      {/* Input Alanı */}
+      {/* --- INPUT ALANI --- */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
-        style={styles.inputWrapper}
       >
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.textInput}
+            style={styles.input}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Sorunuzu buraya yazın..."
-            placeholderTextColor={COLORS.gray}
+            placeholderTextColor="#94a3b8"
             multiline
-            editable={!isLoading} // Yüklenirken yazmayı engelle (isteğe bağlı)
+            maxLength={500}
           />
           <TouchableOpacity
             style={[
               styles.sendButton,
-              (inputText.length === 0 || isLoading) &&
-                styles.sendButtonDisabled,
+              (!inputText.trim() || isLoading) && styles.sendButtonDisabled,
             ]}
             onPress={handleSend}
-            disabled={isLoading || inputText.length === 0}
+            disabled={!inputText.trim() || isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color={COLORS.white} />
+              <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.sendButtonText}>Gönder</Text>
+              <Ionicons name="send" size={20} color="#fff" />
             )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
+}
 
-// --- STİLLER ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+  },
+  // Header Stilleri
   header: {
-    height: 60,
-    backgroundColor: COLORS.white,
+    paddingTop: Platform.OS === "android" ? 40 : 10, // Android status bar payı
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+    zIndex: 10,
+  },
+  headerContent: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 10,
+  },
+  headerAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#fff",
     justifyContent: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    alignItems: "center",
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerAvatarText: {
+    color: "#2563EB",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 12,
+  },
+
+  // Chat Alanı Stilleri
+  chatContainer: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 10,
+  },
+  messageRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginBottom: 16,
+  },
+  messageRowUser: {
+    justifyContent: "flex-end",
+  },
+  messageRowBot: {
+    justifyContent: "flex-start",
+  },
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#10B981",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
     elevation: 2,
   },
-  headerTitle: { fontSize: 18, fontWeight: "bold", color: "#1F2937" },
-  onlineIndicator: { width: 10, height: 10, borderRadius: 5, marginLeft: 8 },
-  listContent: { padding: 16, paddingBottom: 20 },
-  messageRow: { marginVertical: 4, flexDirection: "row", width: "100%" },
-  rowRight: { justifyContent: "flex-end" },
-  rowLeft: { justifyContent: "flex-start" },
-  bubble: { maxWidth: "80%", padding: 12, borderRadius: 16 },
-  bubbleUser: {
-    backgroundColor: COLORS.userBubble,
-    borderBottomRightRadius: 2,
+  avatarText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
-  bubbleBot: { backgroundColor: COLORS.botBubble, borderBottomLeftRadius: 2 },
-  textUser: { color: COLORS.textUser, fontSize: 16 },
-  textBot: { color: COLORS.textBot, fontSize: 16 },
-  timeText: { fontSize: 10, marginTop: 4, alignSelf: "flex-end" },
-  timeTextUser: { color: "rgba(255,255,255,0.7)" },
-  timeTextBot: { color: "rgba(0,0,0,0.5)" },
-  inputWrapper: {
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-  },
-  inputContainer: { flexDirection: "row", padding: 12, alignItems: "flex-end" },
-  textInput: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: 24,
+  bubble: {
+    maxWidth: "75%",
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  bubbleUser: {
+    backgroundColor: "#2563EB",
+    borderBottomRightRadius: 4,
+  },
+  bubbleBot: {
+    backgroundColor: "#fff",
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  textUser: {
+    color: "#fff",
+  },
+  textBot: {
+    color: "#1F2937",
+  },
+  timeText: {
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: "right",
+  },
+  timeUser: {
+    color: "rgba(255,255,255,0.7)",
+  },
+  timeBot: {
+    color: "rgba(0,0,0,0.4)",
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  // Input Alanı Stilleri
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#e2e8f0",
+  },
+  input: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 24,
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
     color: "#000",
-    maxHeight: 100,
+    maxHeight: 100, // Çok satırlı olursa uzamasın
   },
   sendButton: {
-    backgroundColor: COLORS.primary,
     width: 44,
     height: 44,
     borderRadius: 22,
+    backgroundColor: "#2563EB",
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 10,
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sendButtonDisabled: { backgroundColor: COLORS.gray },
-  sendButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 12 },
+  sendButtonDisabled: {
+    backgroundColor: "#94a3b8",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
 });
-
-export default ChatScreen;

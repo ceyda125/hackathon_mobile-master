@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router"; // Yönlendirme için gerekli kütüphane
 import {
   Image,
   SafeAreaView,
@@ -12,7 +13,7 @@ import {
 export default function ProfileScreen() {
   // Mock kullanıcı verileri
   const userData = {
-    name: "Ahmet Yılmaz",
+    name: "Türkan Doğa Durak",
     phone: "+90 532 123 45 67",
     email: "ahmet.yilmaz@example.com",
     memberSince: "15 Mart 2024",
@@ -44,7 +45,9 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    alert("Çıkış yapılıyor...");
+    // Çıkış yapıldığında giriş ekranına (index) yönlendir
+    // replace kullanıyoruz ki geri tuşuna basınca tekrar profile dönmesin
+    router.replace("/");
   };
 
   return (

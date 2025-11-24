@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router"; // Yönlendirme için eklendi
+import { router } from "expo-router";
 import {
   Alert,
   Dimensions,
@@ -16,7 +16,7 @@ import {
 const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const userName = "Ahmet";
+  const userName = "Doğa";
 
   // Yönlendirme Fonksiyonu
   const handleNavigation = (route, isReady = true) => {
@@ -52,7 +52,7 @@ export default function HomeScreen() {
           {/* Energy Summary Card */}
           <View style={styles.summaryCard}>
             <View style={styles.summaryHeader}>
-              <Ionicons name="flash" size={24} color="#f59e0b" />
+              <Ionicons name="flash" size={24} color="#f0a212ff" />
               <Text style={styles.summaryTitle}>Günlük Enerji Özeti</Text>
             </View>
             <View style={styles.summaryStats}>
@@ -86,7 +86,7 @@ export default function HomeScreen() {
               onPress={() => handleNavigation("/chat")} // Chat Sayfasına Yönlendirme
             >
               <LinearGradient
-                colors={["#8b5cf6", "#a78bfa"]}
+                colors={["#f97316", "#ec8f4dff"]}
                 style={styles.featureGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -114,7 +114,7 @@ export default function HomeScreen() {
               onPress={() => handleNavigation(null, false)} // Henüz Hazır Değil
             >
               <LinearGradient
-                colors={["#10b981", "#34d399"]}
+                colors={["#b82323ff", "#b43e3eff"]}
                 style={styles.featureGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -142,7 +142,7 @@ export default function HomeScreen() {
               onPress={() => handleNavigation("/map")} // Harita Sayfasına Yönlendirme
             >
               <LinearGradient
-                colors={["#f59e0b", "#fbbf24"]}
+                colors={["#ac1962ff", "#aa4075ff"]}
                 style={styles.featureGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -183,9 +183,10 @@ export default function HomeScreen() {
                 <Text style={styles.quickActionText}>İstatistikler</Text>
               </TouchableOpacity>
 
+              {/* BİLDİRİMLER BUTONU - GÜNCELLENDİ: Yakında Gelecek */}
               <TouchableOpacity
                 style={styles.quickActionItem}
-                onPress={() => Alert.alert("Bilgi", "Bildirimler yakında!")}
+                onPress={() => handleNavigation(null, false)}
               >
                 <View
                   style={[
@@ -198,11 +199,10 @@ export default function HomeScreen() {
                 <Text style={styles.quickActionText}>Bildirimler</Text>
               </TouchableOpacity>
 
+              {/* KARBON İZİ BUTONU - GÜNCELLENDİ: Yakında Gelecek */}
               <TouchableOpacity
                 style={styles.quickActionItem}
-                onPress={() =>
-                  Alert.alert("Bilgi", "Karbon İzi modülü yakında!")
-                }
+                onPress={() => handleNavigation(null, false)}
               >
                 <View
                   style={[
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#1e293b",
+    color: "#000000ff",
     marginBottom: 4,
   },
   statValueGreen: {
