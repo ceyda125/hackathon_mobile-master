@@ -186,7 +186,7 @@ export default function HomeScreen() {
               {/* BİLDİRİMLER BUTONU - GÜNCELLENDİ: Yakında Gelecek */}
               <TouchableOpacity
                 style={styles.quickActionItem}
-                onPress={() => handleNavigation(null, false)}
+                onPress={() => handleNavigation("/notifications")}
               >
                 <View
                   style={[
@@ -202,7 +202,7 @@ export default function HomeScreen() {
               {/* KARBON İZİ BUTONU - GÜNCELLENDİ: Yakında Gelecek */}
               <TouchableOpacity
                 style={styles.quickActionItem}
-                onPress={() => handleNavigation(null, false)}
+                onPress={() => handleNavigation("/carbon")}
               >
                 <View
                   style={[
