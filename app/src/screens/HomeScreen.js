@@ -111,7 +111,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={styles.featureCard}
               activeOpacity={0.8}
-              onPress={() => handleNavigation(null, false)} // Henüz Hazır Değil
+              onPress={() => handleNavigation("/twin")} // Henüz Hazır Değil
             >
               <LinearGradient
                 colors={["#b82323ff", "#b43e3eff"]}
