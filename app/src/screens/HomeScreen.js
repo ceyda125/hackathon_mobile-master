@@ -16,7 +16,7 @@ import {
 const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
-  const userName = "Doğa";
+  const userName = "Ahmet";
 
   // Yönlendirme Fonksiyonu
   const handleNavigation = (route, isReady = true) => {

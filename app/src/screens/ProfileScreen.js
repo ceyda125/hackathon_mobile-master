@@ -13,13 +13,13 @@ import {
 export default function ProfileScreen() {
   // Mock kullanıcı verileri
   const userData = {
-    name: "Türkan Doğa Durak",
+    name: "Ahmet Yılmaz",
     phone: "+90 532 123 45 67",
-    email: "ahmet.yilmaz@example.com",
+    email: "ahmet.yilmaz@aıdem.com.tr",
     memberSince: "15 Mart 2024",
     location: "İstanbul, Türkiye",
     profileImage:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&q=80",
     energySavings: 23.5,
   };
 
@@ -37,10 +37,15 @@ export default function ProfileScreen() {
     solarPanel: "Var (5 kW)",
   };
 
+  // Blokzincir Verileri GÜNCELLENDİ
   const blockchainData = {
     wallet: "0x742d...4e9f",
     tokens: "1,250 ECO",
     transactions: "47",
+    // Yeni Eklenen Veriler
+    smartContractTxs: "14", // Akıllı sözleşme ile etkileşim sayısı
+    energyShares: "50 Adet", // Kullanıcının sahip olduğu Enerji Payı sayısı
+    shareYield: "₺ 185,40 (Aylık)", // Enerji Payından elde edilen getiri
     lastActivity: "2 saat önce",
   };
 
@@ -206,6 +211,15 @@ export default function ProfileScreen() {
               <View style={styles.moduleItem}>
                 <Text style={styles.moduleLabel}>Token</Text>
                 <Text style={styles.moduleValue}>{blockchainData.tokens}</Text>
+              </View>
+              {/* AKILLI SÖZLEŞME İŞLEMLERİ BURAYA EKLENDİ */}
+              <View style={styles.moduleItem}>
+                <Text style={styles.moduleLabel}>
+                  Akıllı Sözleşme İşlemleri
+                </Text>
+                <Text style={styles.moduleValue}>
+                  {blockchainData.smartContractTxs}
+                </Text>
               </View>
               <View style={styles.moduleItem}>
                 <Text style={styles.moduleLabel}>İşlemler</Text>
